@@ -1,0 +1,69 @@
+inconsistent number locations
+gist: oil well metaphor, not very effective or apparent
+colors for categories of information (oil like colours), luminance contrast (and works in b&w), 
+	but yellow on white translates to light grey on white, neither of which are ideal
+	Brightness contrast less effective for cooler oils
+consistent font used for oil sub-types, but actual oil type in different fonts
+	same oil type in different locations hides fact that sub-types can matter (since sub type is visually first)
+	inconsistent fonts (Sunflower vs Olive)
+	lots of distracting visual pop out
+	luminance is a stronger channel than font (pattern), hence gestalt similarity is undermined (e.g. Sunflower)
+small color scale helps make categories easily distinguishable, allows grouping of related
+red-green colorblind issues
+luminance channel used for both taste strength and temperature category
+use of dotted lines overloaded for both averages and breakout information - visual conjunction
+use of smoke point for ordering, but distance from data hides relationship, and implies oils are ordered on health as that is the primary visual query
+	- position bars centrally as they are the most import element
+ratios require counting, difficult to compare, unnecessary , not explained
+no patterns
+	- clean, but misses opportunity to use a channel 
+lower = better intuitively difficult apply when surrounded by higher = better data,
+	also difficult to locate. Further, what does no bar mean? see fish oil
+
+
+poor continuity of objects due to spaces
+
+gestalt laws
+high/low = good/bad inconsistently used 
+	
+poor use of font, no legend, adds busyness		
+no description
+
+
+
+colors only for a single category breakout
+
+
+lower saturated oils better in general, then consider omega 3 to omega 6 ratio
+
+Visual queries
+* Which oils are healthiest
+* Which oils should I generally avoid
+* Which oils should I replace them with
+* For my given purpose, which oil is best suited
+ - Current layout assumes purpose is more important than health benefits, despite the opposite being more likely
+* Taste vs health
+ - Are there strong tasting, healthy oils that can be used for deep frying
+* Which is the most cost effective healthy oil to use for my family 
+ 
+Vertical stacked lines/bars, 
+	- vernier acuity to indicate proportion of omega 3 as offset/partial fill on log scale (necessary because of length of oil list)
+		> use angle of line
+	- position bars centrally as they are the most import element
+	- pattern bars
+	
+ - allows simple comparisons between related areas
+ - order by health benefits
+ - number summaries before bars
+ - icons for smoke point and uses (find sauteeing, etc), ideally with different closed contouring (gestalt)
+ 
+Use background colour blocks to group related elements (bars, icons, etc.)
+ 
+3 fonts for taste profile
+
+pop out of healthiest options per prep type
+	also best omega 3 ratios
+
+smaller sub-graph ordered by smoke points, with coloured lines showing 
+
+highlight most cost-effective oil in each category

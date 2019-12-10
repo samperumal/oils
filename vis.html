@@ -1,0 +1,300 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <style>
+        body {
+            background-color: #0a0a0a;
+            font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+            margin: 0;
+        }
+
+        h3 { 
+            color: white;
+            margin-left: 1em;
+        }
+
+        line.bar-divide {
+            stroke: #0a0a0a;
+        }
+
+        text.oil {
+            color: white;
+            fill: white;
+            dominant-baseline: central;
+            text-anchor: middle;
+        }
+
+        text.taste0 {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 20px;
+        }
+
+        text.taste1 {
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+            font-size: 19px;
+        }
+
+        text.taste2 {
+            font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+            font-size: 18px;
+        }
+
+        rect.bar.sat {
+            /*fill: #cd442a;*/
+        }
+
+        rect.bar.poly {
+            /*fill: #f0bd00;*/
+        }
+
+        rect.bar.mono {
+            /*fill: #7e9437;*/
+        }
+
+        rect.bar.other {
+            /*fill: #3f51b5;*/
+        }
+
+        rect.bar.nonfat {
+            /*fill: #795548;*/
+        }
+
+        .numbers text {
+            dominant-baseline: central;
+            text-anchor: middle;
+            font-weight: bold;
+        }
+
+        .ratios line {
+            stroke: white;
+            stroke-width: 3px;
+            stroke-linecap: round;
+        }
+
+        .trans ellipse {
+            stroke: white;
+            stroke-width: 2px;
+            fill: none;
+        }
+
+        .trans rect {
+            fill: #0a0a0a;
+            stroke: none;
+        }
+
+        .heat text {
+            dominant-baseline: central;
+            text-anchor: end;
+            font-weight: bold;
+        }
+
+        .ratios text {
+            dominant-baseline: central;
+            text-anchor: middle;
+            font-weight: bold;
+            fill: white;
+        }
+
+        path.cost {
+            stroke: white;
+            stroke-width: 2px;
+            fill: white;
+            fill-opacity: 0.5;
+        }
+
+        a, a:active, a:hover, a:visited {
+            color: lightsteelblue;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"
+            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+            crossorigin="anonymous"></script>
+
+    <script src="https://d3js.org/d3.v5.js"></script>
+</head>
+<body>
+    <div style="text-align: center;">
+        <h3>Oil's well that ends well</h3>
+        <div style="color: white; margin-left: 1em;">Discover healthy oil alternatives that maximise your mono-unsaturated and omega-3 oil intake, for use at any temperature, that fade into the background or deliver a nutty taste surprise.</div>
+
+        <svg id="vis" viewBox="0 0 1900 2000">
+            <image href="Legend.png" width="375" height="742" x="1500" y="50" />
+        </svg>
+            
+        <div style="color: white; margin-left: 1em;">
+            All data sourced from <a href="https://docs.google.com/spreadsheets/d/1TCpmlGXaLh4Pi-fzAAvpCDWlsNagGpVBLfG4ekEPtCs/edit">Information is Beautiful</a>
+        </div>
+    </div>
+    <script src="data.js"></script>
+    <script type="text/javascript">
+        //csvData = null;
+        //d3.csv("data.csv")
+        //    .then(draw);
+
+        for (var i in data) {
+            data[i].sat *= 1;
+            data[i].poly *= 1;
+            data[i].mono *= 1;
+            data[i].ratio *= 1;
+            data[i].transfat *= 1;
+            data[i].cost *= 1;
+
+            if (data[i].ratio < 1 && data[i].ratio > 0) data[i].ratio = -10 / data[i].ratio;
+
+            if (data[i].fridge == "y") data[i].oil += " \u2744";
+
+            data[i].polySat = data[i].poly + data[i].sat;
+            var smoke = data[i].smokeC;
+            var smokeCat = ["noheat"];
+            if (smoke >= 150) smokeCat.push("sauce");
+            if (smoke >= 200) smokeCat.push("bake");
+            if (smoke >= 230) smokeCat.push("sear");
+
+            data[i].smokeCat = smokeCat;
+
+            var numbers = [data[i].sat, data[i].poly, data[i].mono, data[i].other * 1, data[i].nonfat * 1];
+            data[i].numbers = numbers;
+        }
+
+        data = data.sort((a, b) => a.polySat - b.polySat);
+
+        var width = 1900;
+        var height = 4200;
+        var margin = { top: 0, left: 200, bottom: 50, right: 30 };
+
+        var fills = ["#c243d8", "#f0bd00", "#7e9437", "#386cb0", "#5a3224", "white"];
+
+        var svg = d3.select("#vis")
+            .style("display", "inline")
+            .style("width", width)
+            .style("height", height)
+
+        var content = svg.append("g").attr("class", "content")
+            .attr("transform", "translate(0, 50)");
+
+        var rowGroup = content.append("g").attr("class", "rows");
+
+        var rowScale = d3.scaleBand()
+            .range([margin.top, height - margin.bottom])
+            .domain(d3.range(data.length));
+
+        var rowOffset = 46;
+        var rowHeight = rowOffset - 15;
+
+        var rows = rowGroup.selectAll("g.row").data(data)
+            .enter().append("g").attr("class", "row").classed("alt", function (d, i) { return i % 2 == 0; })
+            .attr("transform", function (d, i) { return "translate(0, " + (i * rowOffset) + ")"; });
+
+        var colOffset = 0;
+
+        var numbersWidth = 230;
+        var numbersScale = d3.scaleBand().domain(d3.range(5)).range([30, numbersWidth]);
+        var numbers = rows.append("g").attr("class", "numbers").attr("transform", "translate(" + (colOffset) + ", 0)");
+
+        numbers.selectAll("text").data(function (d) { return d.numbers; }).enter().append("text")
+            .attr("y", rowHeight / 2).attr("x", function (d, i) { return numbersScale(i); })
+            .text(function (d) { return d == 0 ? "" : d; }).attr("fill", function (d, i) { return fills[i]; });
+
+        colOffset += numbersWidth + 10;
+
+        var barsWidth = 300;
+        var barsScale = d3.scaleLinear()
+            .domain([0, 100])
+            .range([0, barsWidth]);
+
+        var bars = rows.append("g").attr("class", "bars").attr("transform", "translate(" + colOffset + ", 0)");
+        var barsBuffer = 0;
+
+        bars.append("rect").attr("class", "bar sat").attr("width", function (d) { return barsScale(d.sat); })
+            .attr("fill", fills[0])
+            .attr("height", rowHeight);
+
+        bars.append("rect").attr("class", "bar poly").attr("width", function (d) { return barsScale(d.poly); })
+            .attr("fill", fills[1])
+            .attr("x", function (d) { return barsScale(d.sat) + barsBuffer; }).attr("height", rowHeight);
+
+        bars.append("rect").attr("class", "bar mono").attr("height", rowHeight).attr("width", function (d) { return barsScale(d.mono); })
+            .attr("fill", fills[2])
+            .attr("x", function (d) { return barsScale(d.sat) + barsBuffer + barsScale(d.poly) + barsBuffer; });
+
+        bars.append("rect").attr("class", "bar other").attr("height", rowHeight).attr("width", function (d) { return barsScale(d.other); })
+            .attr("fill", fills[3])
+            .attr("x", function (d) { return barsScale(d.sat) + barsBuffer + barsScale(d.poly) + barsBuffer + barsScale(d.mono) + barsBuffer; });
+
+        bars.append("rect").attr("class", "bar nonfat").attr("height", rowHeight).attr("width", function (d) { return barsScale(d.nonfat); })
+            .attr("fill", fills[4])
+            .attr("x", function (d) { return barsScale(d.sat) + barsBuffer + barsScale(d.poly) + barsBuffer + barsScale(d.mono) + barsBuffer + barsScale(d.other) + barsBuffer; });
+
+
+        var barDivideScale = d3.scaleBand().domain(d3.range(5)).range(barsScale.range());
+        rowGroup.append("g").attr("class", "bar-dividers").attr("transform", "translate(" + colOffset + ", 0)")
+            .selectAll("line.bar-divide").data(barDivideScale.domain())
+            .enter().append("line").attr("class", "bar-divide")
+            .attr("x1", function (d) { return barDivideScale(d); }).attr("x2", function (d) { return barDivideScale(d); })
+            .attr("y1", 0).attr("y2", height);
+
+        colOffset += barsWidth;
+
+        var costWidth = 150;
+        var xscale = d3.scaleLinear().range([20, 100]).domain(d3.extent(data.map((d) => d.cost)));
+        var yscale = d3.scaleLinear().range([0, 200]).domain(d3.range(data.length));
+        var lineGen = d3.line().x((d) => xscale(d.cost)).y((d, i) => (i + 0.5) * rowOffset).curve(d3.curveCatmullRom);
+
+        content.append("path").attr("transform", "translate(" + colOffset + ", 0)").attr("class", "cost")
+            .datum(data).attr("d", lineGen);
+
+
+        colOffset += costWidth;
+        var textWidth = 200;
+        rows.append("text").attr("y", rowHeight / 2).text(function (d) { return d.type + " " + d.oil; }).attr("x", colOffset + textWidth / 2)
+            .attr("class", function (d) { return "oil taste" + d.taste; });
+
+        colOffset += textWidth;
+        var dropWidth = 80;
+
+        rows.append("g").attr("class", "drop").selectAll("image").data(function (d) { return d3.range(d.taste * 1); })
+            .enter().append("image")
+            .attr("xlink:href", "drop.png").attr("width", "16")//.attr("height", "32")
+            .attr("x", function (d, i) { return colOffset + dropWidth / 4 + i * 17; });
+
+        colOffset += dropWidth + 30;
+
+        var heatScale = d3.scaleBand().domain(d3.range(6)).range([0, 200]);
+        var heatRows = rows.append("g").attr("class", "heat").attr("transform", "translate(" + (colOffset) + ", 0)");
+        heatRows.selectAll("image").data(function (d) { return d.smokeCat; }).enter().append("image")
+            .attr("xlink:href", function (d) { return d + ".png"; }).attr("width", 28).attr("height", 28)
+            .attr("x", function (d, i) { return heatScale(i); });
+
+        var heatCScale = d3.scaleSequential(d3.interpolateOranges).domain(d3.extent(data.map((d) => d.smokeC*1)));
+        heatRows.append("text").text((d) => d.smokeC + "\u00B0C").attr("x", 200).attr("y", rowHeight / 2).attr("fill", (d) => heatCScale(d.smokeC * 1));
+
+        colOffset += 300;
+
+        var ratioScale = d3.scaleLinear().domain(d3.extent(data.map((d) => d.ratio))).range([0, 90]);
+        var ratios = rows.append("g").attr("class", "ratios").attr("transform", "translate(" + (colOffset) + ", " + (rowHeight / 2) + ")");
+
+        ratios.append("line").attr("x1", -rowHeight / 2).attr("x2", rowHeight / 2).attr("y1", 0).attr("y2", 0)
+            .attr("transform", (d) => "rotate(" + ratioScale(d.ratio == 0 ? ratioScale.domain()[1] : d.ratio) + ")");
+
+        ratios.append("text").text((d) => d.ratio == 0 ? "" : ((d.ratio < 0 ? Math.abs(Math.floor(d.ratio)) : 1) + " : " + (d.ratio > 0 ? Math.abs(d.ratio) : 1)))
+            .attr("x", rowHeight * 2 + 0).attr("y", 0).attr("fill", "white");
+
+        colOffset += 175;
+
+        var transScale = d3.scaleLinear().domain(d3.extent(data.map((d) => d.transfat))).range([0, rowHeight / 2]);
+
+        var transRows = rows.filter((d) => d.transfat != 0).append("g").attr("class", "trans").attr("transform", "translate(" + (colOffset) + ", " + (rowHeight / 2) + ")");
+        transRows.append("ellipse").attr("ry", rowHeight / 2).attr("rx", (d) => transScale(d.transfat));
+        transRows.append("rect").attr("y", -rowHeight / 2).attr("x", -rowHeight / 1.8)
+            .attr("width", rowHeight / 1.8).attr("height", rowHeight);
+
+        // Vertical 20% dividers
+
+        console.log("loaded!");
+
+    </script>
+</body>
+</html>
